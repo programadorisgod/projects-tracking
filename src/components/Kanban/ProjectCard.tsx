@@ -5,7 +5,8 @@ import {
   MoreVertical, 
   Edit3, 
   Trash2,
-  Building2
+  Building2,
+  Wrench
 } from 'lucide-react';
 
 interface ProjectCardProps {
@@ -14,6 +15,7 @@ interface ProjectCardProps {
   onDelete: (id: string) => void;
   onStatusChange: (id: string, newStatus: ProjectStatus) => void;
   onSelect: (project: Project) => void;
+  onRequestMaintenance?: (project: Project) => void;
 }
 
 export const ProjectCard: React.FC<ProjectCardProps> = ({
@@ -21,7 +23,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   onEdit,
   onDelete,
   onStatusChange,
-  onSelect
+  onSelect,
+  onRequestMaintenance
 }) => {
   const [showMenu, setShowMenu] = useState(false);
 
@@ -34,12 +37,24 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         .toUpperCase()
     : '??';
 
+  const isMaintenance = project.projectType === 'mantenimiento';
+
   return (
     <div 
-      className="kanban-card kanban-card-minimal"
+      className={`kanban-card kanban-card-minimal ${isMaintenance ? 'kanban-card-maintenance' : ''}`}
       data-id={project.id}
       onClick={() => onSelect(project)}
     >
+      {/* Maintenance Parent Indicator (if it is a maintenance ticket) */}
+      {isMaintenance && (
+        <div className="card-maintenance-pill" title={`Reparando sobre: ${project.parentProjectName || 'Iniciativa Base'}`}>
+          <Wrench size={11} color="var(--color-coral)" />
+          <span className="card-maintenance-pill-text">
+            Soporte de: <strong>{project.parentProjectName || 'Iniciativa Base'}</strong>
+          </span>
+        </div>
+      )}
+
       {/* Top row: Area & Categoría & Quick Actions */}
       <div className="card-top">
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
@@ -81,13 +96,31 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                   borderRadius: 'var(--radius-buttons)',
                   boxShadow: 'var(--shadow-product-ui)',
                   zIndex: 20,
-                  width: '180px',
+                  width: '200px',
                   padding: '4px',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '2px'
                 }}
               >
+                {/* Option to open maintenance ticket if not already a maintenance */}
+                {onRequestMaintenance && (
+                  <>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      style={{ justifyContent: 'flex-start', color: 'var(--color-coral)', fontWeight: 500 }}
+                      onClick={() => {
+                        setShowMenu(false);
+                        onRequestMaintenance(project);
+                      }}
+                    >
+                      <Wrench size={12} />
+                      <span>Abrir Soporte / Mantenimiento</span>
+                    </button>
+                    <hr style={{ margin: '4px 0', border: 'none', borderTop: '1px solid var(--border-subtle)' }} />
+                  </>
+                )}
+
                 <div style={{ padding: '4px 8px', fontSize: '11px', fontWeight: 600, color: 'var(--color-stone)' }}>
                   Mover a estado:
                 </div>
@@ -133,6 +166,13 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
       {/* Título del Proyecto */}
       <h3 className="card-title">{project.name}</h3>
+
+      {/* Scope snippet if maintenance */}
+      {project.maintenanceScope && (
+        <div className="card-maintenance-scope">
+          <span>🔧 {project.maintenanceScope}</span>
+        </div>
+      )}
 
       {/* Footer: Asignado A */}
       <div className="card-meta" style={{ borderTop: 'none', paddingTop: 0, marginTop: '2px' }}>

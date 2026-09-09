@@ -135,6 +135,44 @@ export const STATUS_DEFINITIONS: Record<ProjectStatus, StatusConfig> = {
   }
 };
 
+export type ProjectType = 'proyecto' | 'mantenimiento';
+
+export type MaintenanceType = 'correctivo' | 'evolutivo' | 'soporte' | 'seguridad';
+
+export interface MaintenanceTypeConfig {
+  id: MaintenanceType;
+  label: string;
+  badgeColor: string;
+  description: string;
+}
+
+export const MAINTENANCE_TYPE_DEFINITIONS: Record<MaintenanceType, MaintenanceTypeConfig> = {
+  correctivo: {
+    id: 'correctivo',
+    label: 'Correctivo (Bugfix)',
+    badgeColor: 'var(--color-coral)',
+    description: 'Solución de errores, fallos o bugs en producción'
+  },
+  evolutivo: {
+    id: 'evolutivo',
+    label: 'Evolutivo (Mejora)',
+    badgeColor: 'var(--color-notion-blue)',
+    description: 'Ajuste de alcance, nuevas métricas o funcionalidades'
+  },
+  soporte: {
+    id: 'soporte',
+    label: 'Soporte Operativo',
+    badgeColor: 'var(--color-mocha)',
+    description: 'Acompañamiento, extracción ad-hoc o mantenimiento preventivo'
+  },
+  seguridad: {
+    id: 'seguridad',
+    label: 'Seguridad / Parche',
+    badgeColor: 'var(--color-saffron)',
+    description: 'Actualización de certificados, parches o control de accesos'
+  }
+};
+
 export interface Project {
   id: string;
   name: string;
@@ -152,6 +190,14 @@ export interface Project {
   assignee: string;
   createdAt: string;
   updatedAt: string;
+
+  // Maintenance & Support Lineage
+  projectType?: ProjectType;
+  parentProjectId?: string;
+  parentProjectName?: string;
+  maintenanceType?: MaintenanceType;
+  maintenanceScope?: string;
 }
 
 export type ViewMode = 'kanban' | 'history';
+

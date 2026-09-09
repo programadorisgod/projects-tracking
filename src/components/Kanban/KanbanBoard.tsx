@@ -12,6 +12,7 @@ interface KanbanBoardProps {
   onSelect: (project: Project) => void;
   onNavigateToHistory?: () => void;
   onNewProject?: (status?: ProjectStatus) => void;
+  onRequestMaintenance?: (project: Project) => void;
 }
 
 type ColumnFilterMode = 'all' | 'stages' | 'alerts' | 'finished';
@@ -23,11 +24,13 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   onStatusChange,
   onSelect,
   onNavigateToHistory,
-  onNewProject
+  onNewProject,
+  onRequestMaintenance
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedType, setSelectedType] = useState<string>('all');
   const [columnFilter, setColumnFilter] = useState<ColumnFilterMode>('all');
 
   // Extract unique areas from projects
@@ -39,7 +42,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     return Array.from(areas).sort();
   }, [projects]);
 
-  // Filter projects by search, area, category
+  // Filter projects by search, area, category, type
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {
       const matchesSearch = 
@@ -47,14 +50,18 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.assignee.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (p.parentProjectName && p.parentProjectName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (p.maintenanceScope && p.maintenanceScope.toLowerCase().includes(searchTerm.toLowerCase())) ||
         p.tags.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()));
 
       const matchesArea = selectedArea === 'all' || p.area === selectedArea;
       const matchesCategory = selectedCategory === 'all' || p.category === selectedCategory;
+      const matchesType = selectedType === 'all' || 
+        (selectedType === 'mantenimiento' ? p.projectType === 'mantenimiento' : p.projectType !== 'mantenimiento');
 
-      return matchesSearch && matchesArea && matchesCategory;
+      return matchesSearch && matchesArea && matchesCategory && matchesType;
     });
-  }, [projects, searchTerm, selectedArea, selectedCategory]);
+  }, [projects, searchTerm, selectedArea, selectedCategory, selectedType]);
 
   // Group definitions
   const normalStatuses = useMemo(() => {
@@ -87,6 +94,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
           onSelect={onSelect}
           onNavigateToHistory={onNavigateToHistory}
           onNewProject={onNewProject}
+          onRequestMaintenance={onRequestMaintenance}
         />
       );
     });
@@ -135,6 +143,17 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
               {uniqueAreas.map(area => (
                 <option key={area} value={area}>{area}</option>
               ))}
+            </select>
+
+            <select
+              className="select"
+              style={{ width: 'auto', padding: '6px 10px', fontSize: '13px' }}
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+            >
+              <option value="all">Todos los Tipos</option>
+              <option value="proyecto">Solo Proyectos Base</option>
+              <option value="mantenimiento">Solo Soporte / Mant.</option>
             </select>
           </div>
         </div>

@@ -14,6 +14,7 @@ interface KanbanColumnProps {
   onSelect: (project: Project) => void;
   onNavigateToHistory?: () => void;
   onNewProject?: (status: ProjectStatus) => void;
+  onRequestMaintenance?: (project: Project) => void;
 }
 
 export const KanbanColumn: React.FC<KanbanColumnProps> = ({
@@ -24,7 +25,8 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
   onStatusChange,
   onSelect,
   onNavigateToHistory,
-  onNewProject
+  onNewProject,
+  onRequestMaintenance
 }) => {
   const isDelivered = statusConfig.id === 'entregado';
 
@@ -127,6 +129,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
               onDelete={onDelete}
               onStatusChange={onStatusChange}
               onSelect={onSelect}
+              onRequestMaintenance={onRequestMaintenance}
             />
           </div>
         ))}

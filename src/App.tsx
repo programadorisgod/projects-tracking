@@ -9,6 +9,7 @@ import { ProjectModal } from './components/Modals/ProjectModal';
 import { PauseReasonModal } from './components/Modals/PauseReasonModal';
 import { ProjectDetailModal } from './components/Modals/ProjectDetailModal';
 import { ImportModal } from './components/Modals/ImportModal';
+import { MaintenanceModal } from './components/Modals/MaintenanceModal';
 
 // Robust SPA View Transition helper for page/tab navigation only
 const startSpaTransition = (updateCallback: () => void) => {
@@ -63,6 +64,10 @@ export const App: React.FC = () => {
   const [pendingImportProjects, setPendingImportProjects] = useState<Project[]>([]);
   const [pendingImportFileName, setPendingImportFileName] = useState('');
 
+  // Maintenance & Support Modal States
+  const [isMaintenanceModalOpen, setIsMaintenanceModalOpen] = useState(false);
+  const [maintenanceParentProject, setMaintenanceParentProject] = useState<Project | null>(null);
+
   // Save projects to storage whenever state updates
   useEffect(() => {
     storage.saveProjects(projects);
@@ -110,6 +115,23 @@ export const App: React.FC = () => {
     } else {
       storage.addProject(data);
       setProjects(storage.getProjects());
+    }
+  };
+
+  // Maintenance & Support Handlers
+  const handleRequestMaintenance = (parent: Project) => {
+    setMaintenanceParentProject(parent);
+    setIsMaintenanceModalOpen(true);
+  };
+
+  const handleSaveMaintenance = (data: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => {
+    storage.addProject(data);
+    setProjects(storage.getProjects());
+    // Auto navigate to kanban if not already there so user sees the new ticket
+    if (currentView !== 'kanban') {
+      startSpaTransition(() => {
+        setCurrentView('kanban');
+      });
     }
   };
 
@@ -238,6 +260,7 @@ export const App: React.FC = () => {
             onSelect={handleSelectProject}
             onNavigateToHistory={() => handleViewChange('history')}
             onNewProject={handleCreateProject}
+            onRequestMaintenance={handleRequestMaintenance}
           />
         ) : (
           <HistoryView
@@ -245,6 +268,7 @@ export const App: React.FC = () => {
             projects={projects}
             onSelect={handleSelectProject}
             onEdit={handleEditProject}
+            onRequestMaintenance={handleRequestMaintenance}
           />
         )}
       </main>
@@ -271,11 +295,24 @@ export const App: React.FC = () => {
       <ProjectDetailModal
         isOpen={isDetailModalOpen}
         project={detailProject}
+        allProjects={projects}
+        onRequestMaintenance={handleRequestMaintenance}
+        onSelectProject={handleSelectProject}
         onClose={handleCloseDetailModal}
         onEdit={(proj) => {
           handleCloseDetailModal();
           handleEditProject(proj);
         }}
+      />
+
+      <MaintenanceModal
+        isOpen={isMaintenanceModalOpen}
+        parentProject={maintenanceParentProject}
+        onClose={() => {
+          setIsMaintenanceModalOpen(false);
+          setMaintenanceParentProject(null);
+        }}
+        onSave={handleSaveMaintenance}
       />
 
       <ImportModal

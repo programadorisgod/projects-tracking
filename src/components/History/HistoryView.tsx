@@ -13,19 +13,22 @@ import {
   Building2, 
   CheckCircle2, 
   Users,
-  Layers
+  Layers,
+  Wrench
 } from 'lucide-react';
 
 interface HistoryViewProps {
   projects: Project[];
   onSelect: (project: Project) => void;
   onEdit: (project: Project) => void;
+  onRequestMaintenance?: (project: Project) => void;
 }
 
 export const HistoryView: React.FC<HistoryViewProps> = ({
   projects,
   onSelect,
-  onEdit
+  onEdit,
+  onRequestMaintenance
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedArea, setSelectedArea] = useState<string>('all');
@@ -197,6 +200,16 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
                     <div className="history-project-name">
                       <span>{proj.name}</span>
                       <span className="history-project-desc">{proj.description}</span>
+                      {(() => {
+                        const count = projects.filter(p => p.parentProjectId === proj.id).length;
+                        if (count === 0) return null;
+                        return (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 600, padding: '2px 7px', borderRadius: '10px', background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', marginTop: '4px', width: 'fit-content' }}>
+                            <Wrench size={10} />
+                            {count} {count === 1 ? 'Soporte vinculado' : 'Soportes vinculados'}
+                          </span>
+                        );
+                      })()}
                       {proj.tags && proj.tags.length > 0 && (
                         <div style={{ display: 'flex', gap: '4px', marginTop: '4px', flexWrap: 'wrap' }}>
                           {proj.tags.map((t, idx) => (
@@ -297,15 +310,31 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 
                   {/* Action */}
                   <td>
-                    <button
-                      className="btn btn-secondary btn-sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEdit(proj);
-                      }}
-                    >
-                      Editar
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      {onRequestMaintenance && proj.status === 'entregado' && (
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          style={{ color: 'var(--color-mocha)', borderColor: '#fed7aa', background: '#fffbeb', gap: '4px' }}
+                          title="Abrir ticket de soporte o mantenimiento"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onRequestMaintenance(proj);
+                          }}
+                        >
+                          <Wrench size={12} />
+                          Soporte
+                        </button>
+                      )}
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEdit(proj);
+                        }}
+                      >
+                        Editar
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );
