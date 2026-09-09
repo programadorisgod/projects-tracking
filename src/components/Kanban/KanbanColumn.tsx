@@ -105,11 +105,11 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
           </span>
           {onNewProject && (
             <button
-              className="btn-icon btn-ghost btn-sm"
+              className="column-header-add-btn"
               title={`Añadir nuevo proyecto en ${statusConfig.label}`}
               onClick={() => onNewProject(statusConfig.id)}
             >
-              <Plus size={13} />
+              <Plus size={14} />
             </button>
           )}
         </div>
