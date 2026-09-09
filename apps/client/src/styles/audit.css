@@ -1,0 +1,317 @@
+/* Audit View & Login Page High-Contrast Styles */
+
+/* ==========================================================================
+   LOGIN PAGE
+   ========================================================================== */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-paper-warmth);
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  background-color: var(--color-pure-white);
+  border-radius: var(--radius-cards);
+  box-shadow: var(--shadow-elevated);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+  z-index: 2;
+  position: relative;
+}
+
+.login-header {
+  padding: 2.25rem 2rem 1.5rem 2rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.login-brand-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: var(--color-sky-tint);
+  color: var(--color-notion-blue);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-subtle);
+}
+
+.login-title {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--color-ink-black);
+  margin-bottom: 0.35rem;
+}
+
+.login-subtitle {
+  font-size: 0.875rem;
+  color: var(--color-stone);
+  line-height: 1.4;
+}
+
+.login-body {
+  padding: 1.75rem 2rem;
+}
+
+.login-btn-google {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 0.7rem 1rem;
+  border-radius: var(--radius-buttons);
+  border: 1px solid var(--border-medium);
+  background: var(--color-pure-white);
+  color: var(--color-ink-black);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.login-btn-google:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--color-stone);
+}
+
+.login-btn-github {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 0.7rem 1rem;
+  border-radius: var(--radius-buttons);
+  border: 1px solid #334155;
+  background: #1e293b;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+[data-theme="dark"] .login-btn-github {
+  background: #111827;
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.login-btn-github:hover:not(:disabled) {
+  opacity: 0.92;
+}
+
+.login-divider {
+  position: relative;
+  text-align: center;
+  margin: 1.25rem 0;
+}
+
+.login-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+.login-divider-text {
+  position: relative;
+  background: var(--color-pure-white);
+  padding: 0 0.75rem;
+  font-size: 0.75rem;
+  color: var(--color-stone);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.login-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-charcoal);
+  margin-bottom: 0.35rem;
+}
+
+.login-input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-buttons);
+  border: 1px solid var(--border-medium);
+  background: var(--color-bg-input);
+  font-size: 0.875rem;
+  color: var(--color-ink-black);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.login-input:focus {
+  border-color: var(--color-notion-blue);
+  box-shadow: 0 0 0 3px rgba(46, 139, 240, 0.2);
+}
+
+/* ==========================================================================
+   AUDIT & BITÁCORA HIGH CONTRAST STYLES
+   ========================================================================== */
+
+.audit-card {
+  background: var(--color-pure-white);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-cards);
+  padding: 1.1rem 1.25rem;
+  box-shadow: var(--shadow-subtle);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.audit-card:hover {
+  border-color: var(--border-medium);
+}
+
+.audit-node-marker {
+  position: absolute;
+  left: 0.4rem;
+  top: 0.2rem;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  box-shadow: var(--shadow-subtle);
+}
+
+/* Timeline Vertical Line */
+.audit-timeline-line {
+  position: absolute;
+  top: 1.5rem;
+  bottom: 1rem;
+  left: 1.25rem;
+  width: 2px;
+  background: var(--border-medium);
+  z-index: 1;
+}
+
+/* Date Header Badge */
+.audit-date-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--color-pure-white);
+  border: 1px solid var(--border-subtle);
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-pills);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-ink-black);
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 2;
+  box-shadow: var(--shadow-subtle);
+}
+
+.audit-date-counter {
+  background: var(--color-bg-subtle);
+  color: var(--color-stone);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pills);
+  padding: 0.05rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Audit Filter Bar */
+.audit-filters-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  background: var(--color-pure-white);
+  padding: 0.875rem 1.1rem;
+  border-radius: var(--radius-buttons);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-subtle);
+}
+
+.audit-filters-input {
+  width: 100%;
+  padding: 0.55rem 0.75rem 0.55rem 2.25rem;
+  border-radius: var(--radius-buttons);
+  border: 1px solid var(--border-medium);
+  background: var(--color-bg-input);
+  font-size: 0.875rem;
+  color: var(--color-ink-black);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.audit-filters-input:focus {
+  border-color: var(--color-notion-blue);
+  box-shadow: 0 0 0 3px rgba(46, 139, 240, 0.2);
+}
+
+.audit-filters-select {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-buttons);
+  border: 1px solid var(--border-medium);
+  background: var(--color-bg-input);
+  font-size: 0.85rem;
+  color: var(--color-ink-black);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.audit-filters-select:focus {
+  border-color: var(--color-notion-blue);
+}
+
+/* Transition visualizer box */
+.audit-transition-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-buttons);
+  padding: 0.4rem 0.75rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+}
+
+/* Details Code Box */
+.audit-diff-box {
+  margin-top: 0.65rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-buttons);
+  background: var(--color-code-bg);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.78rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--color-ink-black);
+  overflow-x: auto;
+}
+
+/* High contrast badges in dark mode */
+[data-theme="dark"] .audit-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .audit-filters-bar {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}

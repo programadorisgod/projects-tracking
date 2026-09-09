@@ -31,3 +31,10 @@ data/
 *.tsv
 *.sql
 *.sqlite
+scratch/
+.env
+.env.*
+*.db
+*.db-journal
+local.db*
+.codegraph/

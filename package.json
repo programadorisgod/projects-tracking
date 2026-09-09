@@ -1,27 +1,18 @@
 {
-  "name": "big-data-tracking",
+  "name": "big-data-tracking-monorepo",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "oxlint",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@formkit/drag-and-drop": "^0.6.1",
-    "lucide-react": "^1.43.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "dev": "pnpm --parallel --filter @app/client --filter @app/server dev",
+    "dev:client": "pnpm --filter @app/client dev",
+    "dev:server": "pnpm --filter @app/server dev",
+    "build": "pnpm --filter @app/shared build && pnpm --filter @app/server build && pnpm --filter @app/client build",
+    "lint": "oxlint"
   },
   "devDependencies": {
-    "@types/node": "^24.13.3",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.1.0",
     "oxlint": "^1.79.0",
-    "typescript": "~6.0.2",
-    "vite": "^8.2.2"
+    "puppeteer-core": "^25.10.0",
+    "typescript": "~6.0.2"
   }
 }

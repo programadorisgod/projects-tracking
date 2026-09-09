@@ -1,0 +1,148 @@
+:root {
+  /* Notion Light Mode Palette */
+  --color-notion-blue: #0075de;
+  --color-paper-warmth: #f6f5f4;
+  --color-pure-white: #ffffff;
+  --color-ink-black: #000000;
+  --color-charcoal: #111111;
+  --color-stone: #757575;
+  --color-graphite: #615d59;
+  --color-slate: #696969;
+  --color-sky-tint: #e6f3fe;
+  --color-marigold: #ffb110;
+  --color-coral: #f64932;
+  --color-saffron: #e89d01;
+  --color-vermillion: #e32d14;
+  --color-mocha: #b18164;
+  --color-signal-blue: #097fe8;
+  --color-sky-wash: #62aef0;
+  --color-midnight-ink: #02093a;
+
+  /* Surfaces & Structural Colors */
+  --color-bg-column: #f1f0ee;
+  --color-bg-subtle: #faf9f8;
+  --color-bg-tag: #f1f0ee;
+  --color-bg-input: #ffffff;
+  --color-bg-card: #ffffff;
+  --color-success: #047857;
+  --color-success-bg: #d1fae5;
+  --color-code-bg: #f1f0ee;
+  --color-meta-card-bg: #f6f5f4;
+
+  /* Typography */
+  --font-notioninter: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-lyon-text: 'Source Serif 4', 'Source Serif Pro', Georgia, serif;
+
+  /* Type Scale */
+  --type-caption-size: 12px;
+  --type-caption-line-height: 1.33;
+  --type-caption-letter-spacing: 0.12px;
+  --type-body-sm-size: 14px;
+  --type-body-sm-line-height: 1.43;
+  --type-body-size: 16px;
+  --type-body-line-height: 1.5;
+  --type-subheading-size: 20px;
+  --type-subheading-line-height: 1.2;
+  --type-heading-sm-size: 22px;
+  --type-heading-sm-line-height: 1.27;
+  --type-heading-sm-letter-spacing: -0.242px;
+  --type-heading-size: 32px;
+  --type-heading-line-height: 1.3;
+  --type-heading-lg-size: 40px;
+  --type-heading-lg-line-height: 1.25;
+
+  /* Spacing */
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-28: 28px;
+  --spacing-32: 32px;
+  --spacing-36: 36px;
+  --spacing-64: 64px;
+  --spacing-80: 80px;
+
+  /* Radius */
+  --radius-small: 4px;
+  --radius-buttons: 8px;
+  --radius-cards: 12px;
+  --radius-pills: 9999px;
+
+  /* Shadows */
+  --shadow-nav: 0px 0.7px 1.462px 0px rgba(0, 0, 0, 0.015), 0px 3px 9px 0px rgba(0, 0, 0, 0.03);
+  --shadow-product-ui: 0px 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-subtle: 0px 1px 3px rgba(0, 0, 0, 0.05), 0px 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-elevated: 0px 10px 25px -5px rgba(0, 0, 0, 0.1), 0px 8px 10px -6px rgba(0, 0, 0, 0.06);
+
+  /* Borders & Surfaces */
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-medium: rgba(0, 0, 0, 0.14);
+  --border-focus: var(--color-notion-blue);
+  --bg-hover: rgba(0, 0, 0, 0.035);
+  --bg-active: rgba(0, 0, 0, 0.06);
+
+  /* Layout */
+  --layout-max-width: 1560px;
+
+  /* Compatibility & Semantic Aliases */
+  --bg-primary: var(--color-paper-warmth);
+  --bg-secondary: var(--color-pure-white);
+  --bg-tertiary: var(--color-bg-subtle);
+  --text-primary: var(--color-ink-black);
+  --text-secondary: var(--color-charcoal);
+  --text-tertiary: var(--color-stone);
+  --border-color: var(--border-subtle);
+}
+
+/* Notion Dark Mode */
+[data-theme="dark"] {
+  --color-notion-blue: #2e8bf0;
+  --color-paper-warmth: #191919;
+  --color-pure-white: #252525;
+  --color-ink-black: #ffffff;
+  --color-charcoal: #e8e8e8;
+  --color-stone: #9a9a97;
+  --color-graphite: #cccccc;
+  --color-slate: #ababab;
+  --color-sky-tint: rgba(46, 139, 240, 0.18);
+  --color-marigold: #f59e0b;
+  --color-coral: #ef4444;
+  --color-saffron: #f59e0b;
+  --color-vermillion: #f87171;
+  --color-mocha: #d7b59e;
+
+  /* Surfaces & Structural Colors */
+  --color-bg-column: #202020;
+  --color-bg-subtle: #1b1b1b;
+  --color-bg-tag: #2a2a2a;
+  --color-bg-input: #1b1b1b;
+  --color-bg-card: #252525;
+  --color-success: #34d399;
+  --color-success-bg: rgba(52, 211, 153, 0.15);
+  --color-code-bg: #171717;
+  --color-meta-card-bg: #1c1c1c;
+
+  /* Borders & Overlays */
+  --border-subtle: rgba(255, 255, 255, 0.1);
+  --border-medium: rgba(255, 255, 255, 0.18);
+  --border-focus: var(--color-notion-blue);
+  --bg-hover: rgba(255, 255, 255, 0.06);
+  --bg-active: rgba(255, 255, 255, 0.1);
+
+  /* Dark Mode Shadows */
+  --shadow-nav: 0px 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-subtle: 0px 1px 3px rgba(0, 0, 0, 0.3), 0px 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-product-ui: 0px 4px 14px rgba(0, 0, 0, 0.45);
+  --shadow-elevated: 0px 12px 32px rgba(0, 0, 0, 0.7);
+
+  /* Semantic Dark Aliases */
+  --bg-primary: #191919;
+  --bg-secondary: #222222;
+  --bg-tertiary: #2a2a2a;
+  --text-primary: #ffffff;
+  --text-secondary: #e2e8f0;
+  --text-tertiary: #94a3b8;
+  --border-color: rgba(255, 255, 255, 0.12);
+}
