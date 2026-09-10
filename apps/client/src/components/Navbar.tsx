@@ -21,6 +21,7 @@ interface NavbarProps {
   onExport: () => void;
   onImportFile: (file: File) => void;
   onReset: () => void;
+  isResetting?: boolean;
   activeCount: number;
   completedCount: number;
   theme: 'light' | 'dark';
@@ -35,6 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onExport,
   onImportFile,
   onReset,
+  isResetting = false,
   activeCount,
   completedCount,
   theme,
@@ -140,10 +142,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button 
               className="btn btn-ghost btn-sm" 
               onClick={onReset} 
-              title="Restaurar datos iniciales de prueba"
+              disabled={isResetting}
+              title={isResetting ? "Restaurando base de datos a los valores iniciales..." : "Restaurar datos iniciales de prueba"}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                minWidth: '95px',
+                justifyContent: 'center',
+                opacity: isResetting ? 0.75 : 1,
+                cursor: isResetting ? 'not-allowed' : 'pointer'
+              }}
             >
-              <RotateCcw size={14} />
-              <span>Restaurar</span>
+              <RotateCcw size={14} className={isResetting ? 'spin' : ''} />
+              <span>{isResetting ? 'Restaurando...' : 'Restaurar'}</span>
             </button>
 
             <button className="btn btn-primary" onClick={onNewProject}>

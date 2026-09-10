@@ -14,7 +14,11 @@ import {
   CheckCircle2,
   Users,
   Layers,
-  Wrench
+  Wrench,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
 } from 'lucide-react';
 
 interface HistoryViewProps {
@@ -73,6 +77,34 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
       return matchesSearch && matchesArea && matchesCategory;
     });
   }, [completedProjects, searchTerm, selectedArea, selectedCategory]);
+
+  // Pagination State & Logic
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+
+  // Reset to first page whenever filters or search criteria change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedArea, selectedCategory]);
+
+  const totalItems = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const activePage = Math.min(Math.max(1, currentPage), totalPages);
+
+  const startIdx = (activePage - 1) * pageSize;
+  const endIdx = Math.min(startIdx + pageSize, totalItems);
+
+  const paginatedProjects = useMemo(() => {
+    return filtered.slice(startIdx, endIdx);
+  }, [filtered, startIdx, endIdx]);
+
+  const isFirstPage = activePage <= 1;
+  const isLastPage = activePage >= totalPages;
+
+  const goToFirst = () => setCurrentPage(1);
+  const goToPrev = () => setCurrentPage(prev => Math.max(1, prev - 1));
+  const goToNext = () => setCurrentPage(prev => Math.min(totalPages, prev + 1));
+  const goToLast = () => setCurrentPage(totalPages);
 
   const handleCopy = (id: string, text: string, e: MouseEvent) => {
     e.stopPropagation();
@@ -198,7 +230,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
             </tr>
           </thead>
           <tbody>
-            {filtered.map((proj) => {
+            {paginatedProjects.map((proj) => {
               const statusCfg = STATUS_DEFINITIONS[proj.status];
               const initials = proj.assignee
                 ? proj.assignee.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
@@ -360,6 +392,89 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
             )}
           </tbody>
         </table>
+
+        {/* Pagination Controls */}
+        {totalItems > 0 && (
+          <div className="history-pagination">
+            <div className="pagination-info">
+              <span>
+                Mostrando <strong>{startIdx + 1}</strong> - <strong>{endIdx}</strong> de{' '}
+                <strong>{totalItems}</strong> proyectos
+              </span>
+              <div className="pagination-page-size">
+                <label htmlFor="history-page-size-select" style={{ fontSize: '12px', color: 'var(--color-stone)' }}>
+                  Mostrar:
+                </label>
+                <select
+                  id="history-page-size-select"
+                  value={pageSize}
+                  onChange={e => {
+                    setPageSize(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="pagination-select"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="pagination-actions">
+              <button
+                type="button"
+                className="pagination-btn"
+                onClick={goToFirst}
+                disabled={isFirstPage}
+                title="Ir a la primera página"
+              >
+                <ChevronsLeft size={15} />
+                <span>Primero</span>
+              </button>
+
+              <button
+                type="button"
+                className="pagination-btn"
+                onClick={goToPrev}
+                disabled={isFirstPage}
+                title="Página anterior"
+              >
+                <ChevronLeft size={15} />
+                <span>Anterior</span>
+              </button>
+
+              <div className="pagination-current-page">
+                <span>
+                  Página <strong>{activePage}</strong> de <strong>{totalPages}</strong>
+                </span>
+              </div>
+
+              <button
+                type="button"
+                className="pagination-btn"
+                onClick={goToNext}
+                disabled={isLastPage}
+                title="Página siguiente"
+              >
+                <span>Siguiente</span>
+                <ChevronRight size={15} />
+              </button>
+
+              <button
+                type="button"
+                className="pagination-btn"
+                onClick={goToLast}
+                disabled={isLastPage}
+                title="Ir a la última página"
+              >
+                <span>Último</span>
+                <ChevronsRight size={15} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

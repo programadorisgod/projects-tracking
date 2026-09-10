@@ -14,6 +14,7 @@ import { ImportModal } from './components/Modals/ImportModal';
 import { MaintenanceModal } from './components/Modals/MaintenanceModal';
 import { LoginPage } from './components/Auth/LoginPage';
 import { useSession } from './auth/client';
+import { ToastProvider, useToast } from './context/ToastContext';
 
 // SPA View Transition helper for page/tab navigation
 const startSpaTransition = (updateCallback: () => void) => {
@@ -28,7 +29,8 @@ const startSpaTransition = (updateCallback: () => void) => {
   }
 };
 
-export const App: React.FC = () => {
+const AppContent: React.FC = () => {
+  const { showToast } = useToast();
   const { data: session, isPending } = useSession();
   const [localUser, setLocalUser] = useState<{ name: string; email: string } | null>(() => {
     const savedName = localStorage.getItem('lead_user_name');
@@ -40,6 +42,7 @@ export const App: React.FC = () => {
 
   const [projects, setProjects] = useState<Project[]>(() => storage.getProjects());
   const [currentView, setCurrentView] = useState<ViewMode>('kanban');
+  const [isResetting, setIsResetting] = useState<boolean>(false);
 
   // Load from Backend API on mount
   useEffect(() => {
@@ -286,9 +289,10 @@ export const App: React.FC = () => {
         setProjects(updatedList);
       });
       api.getAuditLogs({ limit: 150 }).catch(() => {});
+      showToast('Proyectos importados exitosamente.', 'success');
     } catch (err) {
       console.error('Error importing projects:', err);
-      alert('Error al importar proyectos en la base de datos.');
+      showToast('Error al importar proyectos en la base de datos.', 'error');
     } finally {
       setIsImportModalOpen(false);
       setPendingImportProjects([]);
@@ -296,16 +300,21 @@ export const App: React.FC = () => {
   };
 
   const handleReset = async () => {
+    if (isResetting) return;
     if (confirm('¿Deseas restaurar la base de datos a los proyectos de ejemplo originales? Esta acción quedará registrada en la bitácora.')) {
+      setIsResetting(true);
       try {
         const restored = await api.resetProjects();
         startSpaTransition(() => {
           setProjects(restored);
         });
         api.getAuditLogs({ limit: 150 }).catch(() => {});
+        showToast('Base de datos restaurada correctamente a sus proyectos iniciales.', 'success');
       } catch (err) {
         console.error('Error resetting projects:', err);
-        alert('Error al restaurar los proyectos en la base de datos.');
+        showToast('Error al restaurar los proyectos en la base de datos.', 'error');
+      } finally {
+        setIsResetting(false);
       }
     }
   };
@@ -351,6 +360,7 @@ export const App: React.FC = () => {
         onExport={handleExport}
         onImportFile={handleImportFile}
         onReset={handleReset}
+        isResetting={isResetting}
         activeCount={activeCount}
         completedCount={completedCount}
         theme={theme}
@@ -443,6 +453,14 @@ export const App: React.FC = () => {
         onConfirm={handleConfirmImport}
       />
     </div>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <ToastProvider>
+      <AppContent />
+    </ToastProvider>
   );
 };
 

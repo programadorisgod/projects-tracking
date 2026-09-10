@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Project } from '@app/shared';
-import { Search, Filter, RefreshCw } from 'lucide-react';
+import { Search, Filter, RefreshCw, Check } from 'lucide-react';
 
 interface AuditFiltersProps {
   search: string;
@@ -12,6 +12,7 @@ interface AuditFiltersProps {
   projects: Project[];
   onRefresh: () => void;
   isLoading: boolean;
+  justUpdated?: boolean;
 }
 
 export const AuditFilters: React.FC<AuditFiltersProps> = ({
@@ -23,7 +24,8 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
   onProjectChange,
   projects,
   onRefresh,
-  isLoading
+  isLoading,
+  justUpdated = false
 }) => {
   return (
     <div className="audit-filters-bar">
@@ -84,7 +86,7 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
           ))}
         </select>
 
-        {/* Refresh button */}
+        {/* Refresh / Update button */}
         <button
           onClick={onRefresh}
           disabled={isLoading}
@@ -92,12 +94,20 @@ export const AuditFilters: React.FC<AuditFiltersProps> = ({
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '0.35rem'
+            gap: '0.35rem',
+            minWidth: '105px',
+            justifyContent: 'center',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
+            opacity: isLoading ? 0.75 : 1
           }}
-          title="Refrescar bitácora"
+          title={isLoading ? "Actualizando bitácora..." : "Actualizar bitácora"}
         >
-          <RefreshCw size={14} className={isLoading ? 'spin' : ''} />
-          <span>Refrescar</span>
+          {justUpdated ? (
+            <Check size={14} style={{ color: 'var(--color-success, #047857)' }} />
+          ) : (
+            <RefreshCw size={14} className={isLoading ? 'spin' : ''} />
+          )}
+          <span>{isLoading ? 'Actualizando...' : justUpdated ? 'Actualizado' : 'Actualizar'}</span>
         </button>
       </div>
     </div>

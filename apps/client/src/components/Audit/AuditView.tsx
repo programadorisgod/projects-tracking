@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type { Project, AuditLogEntry, AuditStats } from '@app/shared';
 import { api } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 import { AuditStatsBar } from './AuditStatsBar';
 import { AuditFilters } from './AuditFilters';
 import { AuditTimelineItem } from './AuditTimelineItem';
@@ -20,14 +21,15 @@ let memoryAuditStats: AuditStats = {
 };
 
 export const AuditView: React.FC<AuditViewProps> = ({ projects }) => {
+  const { showToast } = useToast();
   const [entries, setEntries] = useState<AuditLogEntry[]>(memoryAuditEntries);
   const [stats, setStats] = useState<AuditStats>(memoryAuditStats);
   const [isLoading, setIsLoading] = useState<boolean>(memoryAuditEntries.length === 0);
+  const [justUpdated, setJustUpdated] = useState<boolean>(false);
   const [search, setSearch] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
   const [selectedAction, setSelectedAction] = useState<string>('all');
   const [selectedProject, setSelectedProject] = useState<string>('all');
-  const [refreshKey, setRefreshKey] = useState<number>(0);
 
   // Debounce search input to avoid flood of HTTP requests on every keystroke
   useEffect(() => {
@@ -42,9 +44,7 @@ export const AuditView: React.FC<AuditViewProps> = ({ projects }) => {
     let isCancelled = false;
 
     const fetchData = async () => {
-      if (memoryAuditEntries.length === 0) {
-        setIsLoading(true);
-      }
+      setIsLoading(true);
       try {
         const [logsRes, statsRes] = await Promise.all([
           api.getAuditLogs({
@@ -81,10 +81,39 @@ export const AuditView: React.FC<AuditViewProps> = ({ projects }) => {
     return () => {
       isCancelled = true;
     };
-  }, [debouncedSearch, selectedAction, selectedProject, refreshKey]);
+  }, [debouncedSearch, selectedAction, selectedProject]);
 
-  const handleManualRefresh = () => {
-    setRefreshKey(prev => prev + 1);
+  const handleManualRefresh = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      const [logsRes, statsRes] = await Promise.all([
+        api.getAuditLogs({
+          search: debouncedSearch || undefined,
+          action: selectedAction !== 'all' ? selectedAction : undefined,
+          projectId: selectedProject !== 'all' ? selectedProject : undefined,
+          limit: 150
+        }),
+        api.getAuditStats()
+      ]);
+
+      if (!debouncedSearch && selectedAction === 'all' && selectedProject === 'all') {
+        memoryAuditEntries = logsRes.entries;
+        memoryAuditStats = statsRes;
+      }
+      setEntries(logsRes.entries);
+      setStats(statsRes);
+      setJustUpdated(true);
+      showToast('Bitácora de auditoría actualizada con éxito.', 'success');
+      setTimeout(() => {
+        setJustUpdated(false);
+      }, 2000);
+    } catch (err) {
+      console.error('Error refreshing audit data:', err);
+      showToast('Error al actualizar la bitácora de auditoría.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Group entries by local date (e.g. "2026-09-09", "2026-09-08", etc.)
@@ -184,6 +213,7 @@ export const AuditView: React.FC<AuditViewProps> = ({ projects }) => {
         projects={projects}
         onRefresh={handleManualRefresh}
         isLoading={isLoading}
+        justUpdated={justUpdated}
       />
 
       {/* Chronological Timeline */}
