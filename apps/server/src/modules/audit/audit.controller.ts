@@ -1,21 +1,39 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
+import { z } from 'zod';
 import { auditService } from './audit.service';
 import type { AuditFilters } from '@app/shared';
+import { requireAuth } from '../../auth';
 
 export const auditRouter = Router();
 
-// GET /api/audit
-auditRouter.get('/', async (req: Request, res: Response) => {
+const auditQuerySchema = z.object({
+  search: z.string().max(100).optional(),
+  action: z.string().max(50).optional(),
+  projectId: z.string().max(100).optional(),
+  startDate: z.string().max(40).optional(),
+  endDate: z.string().max(40).optional(),
+  limit: z.coerce.number().int().min(1).max(200).default(100),
+  offset: z.coerce.number().int().min(0).default(0)
+});
+
+// GET /api/audit (Protected: requireAuth)
+auditRouter.get('/', requireAuth, async (req: Request, res: Response) => {
   try {
+    const parsed = auditQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Parámetros de consulta inválidos', details: parsed.error.format() });
+    }
+
+    const { search, action, projectId, startDate, endDate, limit, offset } = parsed.data;
     const filters: AuditFilters = {
-      search: req.query.search as string | undefined,
-      action: req.query.action as string | undefined,
-      projectId: req.query.projectId as string | undefined,
-      startDate: req.query.startDate as string | undefined,
-      endDate: req.query.endDate as string | undefined,
-      limit: req.query.limit ? parseInt(req.query.limit as string, 10) : 100,
-      offset: req.query.offset ? parseInt(req.query.offset as string, 10) : 0
+      search,
+      action,
+      projectId,
+      startDate,
+      endDate,
+      limit,
+      offset
     };
 
     const result = await auditService.getAuditLogs(filters);
@@ -26,8 +44,8 @@ auditRouter.get('/', async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/audit/stats
-auditRouter.get('/stats', async (_req: Request, res: Response) => {
+// GET /api/audit/stats (Protected: requireAuth)
+auditRouter.get('/stats', requireAuth, async (_req: Request, res: Response) => {
   try {
     const stats = await auditService.getStats();
     res.json(stats);
@@ -36,3 +54,4 @@ auditRouter.get('/stats', async (_req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to retrieve audit stats' });
   }
 });
+

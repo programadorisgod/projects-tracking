@@ -3,63 +3,86 @@ import { storage } from './storage';
 
 const API_BASE = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
 
+async function secureFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  const headers = new Headers(init.headers || {});
+  
+  // Attach user context headers in development mode
+  const devName = localStorage.getItem('lead_user_name');
+  const devEmail = localStorage.getItem('lead_user_email');
+  if (devName) headers.set('x-user-name', devName);
+  if (devEmail) headers.set('x-user-email', devEmail);
+
+  return fetch(`${API_BASE}${path}`, {
+    ...init,
+    credentials: 'include', // Crucial for HttpOnly session cookie transmission
+    headers
+  });
+}
+
 export const api = {
   // Projects
   async getProjects(): Promise<Project[]> {
     try {
-      const res = await fetch(`${API_BASE}/api/projects`);
+      const res = await secureFetch('/api/projects');
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
-      // Cache locally
       storage.saveProjects(data);
       return data;
     } catch (err) {
-      console.warn('Backend unreachable, using local storage cache:', err);
+      console.warn('Backend unreachable or unauthenticated, using local storage cache:', err);
       return storage.getProjects();
     }
   },
 
   async createProject(data: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>): Promise<Project> {
     try {
-      const res = await fetch(`${API_BASE}/api/projects`, {
+      const res = await secureFetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => ({}));
+        throw new Error(errorBody.message || `HTTP error! status: ${res.status}`);
+      }
       const created = await res.json();
       return created;
     } catch (err) {
-      console.warn('Backend unreachable, saving locally:', err);
+      console.warn('Backend error, saving locally:', err);
       return storage.addProject(data);
     }
   },
 
   async updateProject(id: string, updates: Partial<Project>): Promise<Project[]> {
     try {
-      const res = await fetch(`${API_BASE}/api/projects/${id}`, {
+      const res = await secureFetch(`/api/projects/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates)
       });
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      // Refresh full list
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => ({}));
+        throw new Error(errorBody.message || `HTTP error! status: ${res.status}`);
+      }
       return await this.getProjects();
     } catch (err) {
-      console.warn('Backend unreachable, updating locally:', err);
+      console.warn('Backend error, updating locally:', err);
       return storage.updateProject(id, updates);
     }
   },
 
   async deleteProject(id: string): Promise<Project[]> {
     try {
-      const res = await fetch(`${API_BASE}/api/projects/${id}`, {
+      const res = await secureFetch(`/api/projects/${id}`, {
         method: 'DELETE'
       });
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => ({}));
+        throw new Error(errorBody.message || `HTTP error! status: ${res.status}`);
+      }
       return await this.getProjects();
     } catch (err) {
-      console.warn('Backend unreachable, deleting locally:', err);
+      console.warn('Backend error, deleting locally:', err);
       return storage.deleteProject(id);
     }
   },
@@ -67,7 +90,7 @@ export const api = {
   // Database Export / Import / Reset Operations (Turso DB)
   async exportProjects(): Promise<void> {
     try {
-      const res = await fetch(`${API_BASE}/api/projects/export`);
+      const res = await secureFetch('/api/projects/export');
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -86,17 +109,20 @@ export const api = {
 
   async importProjects(projects: Project[], mode: 'replace' | 'merge'): Promise<Project[]> {
     try {
-      const res = await fetch(`${API_BASE}/api/projects/import`, {
+      const res = await secureFetch('/api/projects/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ projects, mode })
       });
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => ({}));
+        throw new Error(errorBody.message || `HTTP error! status: ${res.status}`);
+      }
       const updatedList = await res.json();
       storage.saveProjects(updatedList);
       return updatedList;
     } catch (err) {
-      console.warn('Backend import unreachable, importing locally:', err);
+      console.warn('Backend import error, importing locally:', err);
       if (mode === 'replace') {
         storage.saveProjects(projects);
         return projects;
@@ -109,15 +135,18 @@ export const api = {
 
   async resetProjects(): Promise<Project[]> {
     try {
-      const res = await fetch(`${API_BASE}/api/projects/reset`, {
+      const res = await secureFetch('/api/projects/reset', {
         method: 'POST'
       });
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => ({}));
+        throw new Error(errorBody.message || `HTTP error! status: ${res.status}`);
+      }
       const restored = await res.json();
       storage.saveProjects(restored);
       return restored;
     } catch (err) {
-      console.warn('Backend reset unreachable, resetting locally:', err);
+      console.warn('Backend reset error, resetting locally:', err);
       return storage.resetDefaults();
     }
   },
@@ -134,7 +163,7 @@ export const api = {
       if (filters.limit) params.append('limit', filters.limit.toString());
       if (filters.offset) params.append('offset', filters.offset.toString());
 
-      const res = await fetch(`${API_BASE}/api/audit?${params.toString()}`);
+      const res = await secureFetch(`/api/audit?${params.toString()}`);
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (err) {
@@ -145,7 +174,7 @@ export const api = {
 
   async getAuditStats(): Promise<AuditStats> {
     try {
-      const res = await fetch(`${API_BASE}/api/audit/stats`);
+      const res = await secureFetch('/api/audit/stats');
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (err) {
@@ -158,3 +187,4 @@ export const api = {
     }
   }
 };
+

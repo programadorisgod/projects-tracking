@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import type { MouseEvent } from 'react';
 import { STATUS_DEFINITIONS } from '../../types/project';
 import type { Project } from '../../types/project';
+import { safeUrl } from '../../utils/security';
 import {
   Search,
   Filter,
@@ -311,22 +312,35 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 
                   {/* GitHub */}
                   <td>
-                    {proj.githubUrl ? (
-                      <a
-                        href={proj.githubUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="link-btn"
-                        onClick={(e) => e.stopPropagation()}
-                        title="Abrir repositorio GitHub"
-                      >
-                        <GitBranch size={12} />
-                        <span>Repositorio</span>
-                        <ExternalLink size={10} />
-                      </a>
-                    ) : (
-                      <span style={{ color: 'var(--color-stone)', fontSize: '12px' }}>Sin repo</span>
-                    )}
+                    {(() => {
+                      const validatedUrl = safeUrl(proj.githubUrl);
+                      if (validatedUrl) {
+                        return (
+                          <a
+                            href={validatedUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="link-btn"
+                            onClick={(e) => e.stopPropagation()}
+                            title="Abrir repositorio GitHub"
+                          >
+                            <GitBranch size={12} />
+                            <span>Repositorio</span>
+                            <ExternalLink size={10} />
+                          </a>
+                        );
+                      }
+                      if (proj.githubUrl) {
+                        return (
+                          <span style={{ color: 'var(--color-coral, #ef4444)', fontSize: '11px' }} title="URL bloqueada por seguridad">
+                            Inseguro
+                          </span>
+                        );
+                      }
+                      return (
+                        <span style={{ color: 'var(--color-stone)', fontSize: '12px' }}>Sin repo</span>
+                      );
+                    })()}
                   </td>
 
                   {/* Dates */}

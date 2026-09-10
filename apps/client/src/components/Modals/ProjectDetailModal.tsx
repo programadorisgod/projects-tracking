@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { STATUS_DEFINITIONS, MAINTENANCE_TYPE_DEFINITIONS } from '../../types/project';
 import type { Project } from '../../types/project';
+import { safeUrl } from '../../utils/security';
 import { 
   X, 
   GitBranch, 
@@ -274,21 +275,34 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
               <GitBranch size={12} />
               Repositorio de GitHub
             </span>
-            {project.githubUrl ? (
-              <a
-                href={project.githubUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="link-btn"
-                style={{ fontSize: '13px', padding: '6px 12px' }}
-              >
-                <GitBranch size={14} />
-                <span>{project.githubUrl}</span>
-                <ExternalLink size={12} />
-              </a>
-            ) : (
-              <span style={{ fontSize: '13px', color: 'var(--color-stone)' }}>No se ha configurado URL de GitHub.</span>
-            )}
+            {(() => {
+              const validatedUrl = safeUrl(project.githubUrl);
+              if (validatedUrl) {
+                return (
+                  <a
+                    href={validatedUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="link-btn"
+                    style={{ fontSize: '13px', padding: '6px 12px' }}
+                  >
+                    <GitBranch size={14} />
+                    <span>{validatedUrl}</span>
+                    <ExternalLink size={12} />
+                  </a>
+                );
+              }
+              if (project.githubUrl) {
+                return (
+                  <span style={{ fontSize: '13px', color: 'var(--color-coral, #ef4444)' }}>
+                    URL no segura bloqueada ({project.githubUrl})
+                  </span>
+                );
+              }
+              return (
+                <span style={{ fontSize: '13px', color: 'var(--color-stone)' }}>No se ha configurado URL de GitHub.</span>
+              );
+            })()}
           </div>
 
           {/* Tags */}
