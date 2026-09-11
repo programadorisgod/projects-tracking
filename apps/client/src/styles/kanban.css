@@ -470,6 +470,10 @@
   gap: 8px;
 }
 
+.kanban-card.menu-open {
+  z-index: 50 !important;
+}
+
 .kanban-card:active {
   cursor: grabbing;
 }

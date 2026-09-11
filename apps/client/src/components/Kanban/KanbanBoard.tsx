@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { STATUS_DEFINITIONS } from '../../types/project';
 import type { Project, ProjectStatus } from '../../types/project';
 import { KanbanColumn } from './KanbanColumn';
 import { Search, Filter, Layers, AlertTriangle, GitMerge, AlertCircle, CheckCircle } from 'lucide-react';
+import { api } from '../../services/api';
 
 interface KanbanBoardProps {
   projects: Project[];
@@ -31,7 +32,19 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
+  const [selectedAssignee, setSelectedAssignee] = useState<string>('all');
   const [columnFilter, setColumnFilter] = useState<ColumnFilterMode>('all');
+  const [dbUsers, setDbUsers] = useState<string[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    api.getUsers().then(users => {
+      if (mounted) {
+        setDbUsers(users.map(u => u.name));
+      }
+    }).catch(() => {});
+    return () => { mounted = false; };
+  }, []);
 
   // Extract unique areas from projects
   const uniqueAreas = useMemo(() => {
@@ -42,7 +55,18 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     return Array.from(areas).sort();
   }, [projects]);
 
-  // Filter projects by search, area, category, type
+  // Extract unique assignees from DB and projects
+  const uniqueAssignees = useMemo(() => {
+    const set = new Set<string>(dbUsers);
+    projects.forEach(p => {
+      if (p.assignee && p.assignee !== 'Sin asignar') {
+        set.add(p.assignee);
+      }
+    });
+    return Array.from(set).sort();
+  }, [dbUsers, projects]);
+
+  // Filter projects by search, area, category, type, assignee
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {
       const matchesSearch = 
@@ -58,10 +82,11 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
       const matchesCategory = selectedCategory === 'all' || p.category === selectedCategory;
       const matchesType = selectedType === 'all' || 
         (selectedType === 'mantenimiento' ? p.projectType === 'mantenimiento' : p.projectType !== 'mantenimiento');
+      const matchesAssignee = selectedAssignee === 'all' || p.assignee === selectedAssignee;
 
-      return matchesSearch && matchesArea && matchesCategory && matchesType;
+      return matchesSearch && matchesArea && matchesCategory && matchesType && matchesAssignee;
     });
-  }, [projects, searchTerm, selectedArea, selectedCategory, selectedType]);
+  }, [projects, searchTerm, selectedArea, selectedCategory, selectedType, selectedAssignee]);
 
   // Group definitions
   const normalStatuses = useMemo(() => {
@@ -175,6 +200,19 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
               <option value="all">Todos los Tipos</option>
               <option value="proyecto">Solo Proyectos Base</option>
               <option value="mantenimiento">Solo Soporte / Mant.</option>
+            </select>
+
+            <select
+              className="select"
+              style={{ width: 'auto', padding: '6px 10px', fontSize: '13px' }}
+              value={selectedAssignee}
+              onChange={(e) => setSelectedAssignee(e.target.value)}
+              title="Filtrar por responsable asignado"
+            >
+              <option value="all">Todos los Responsables</option>
+              {uniqueAssignees.map(user => (
+                <option key={user} value={user}>{user}</option>
+              ))}
             </select>
           </div>
         </div>

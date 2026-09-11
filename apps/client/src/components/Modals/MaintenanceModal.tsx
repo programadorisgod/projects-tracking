@@ -15,6 +15,7 @@ import {
   User, 
   Calendar 
 } from 'lucide-react';
+import { api } from '../../services/api';
 
 interface MaintenanceModalProps {
   isOpen: boolean;
@@ -33,9 +34,18 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
   const [maintenanceType, setMaintenanceType] = useState<MaintenanceType>('correctivo');
   const [maintenanceScope, setMaintenanceScope] = useState('');
   const [assignee, setAssignee] = useState('');
+  const [availableUsers, setAvailableUsers] = useState<{ id: string; name: string; email?: string }[]>([]);
   const [initialStatus, setInitialStatus] = useState<ProjectStatus>('desarrollo');
   const [estimatedDeliveryDate, setEstimatedDeliveryDate] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  useEffect(() => {
+    let mounted = true;
+    api.getUsers().then(users => {
+      if (mounted) setAvailableUsers(users);
+    }).catch(() => {});
+    return () => { mounted = false; };
+  }, []);
 
   useEffect(() => {
     if (parentProject && isOpen) {
@@ -245,13 +255,21 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
                   <User size={12} />
                   Responsable del Soporte *
                 </label>
-                <input
-                  type="text"
-                  className="input"
-                  placeholder="Nombre de quien lo reparará"
+                <select
+                  className="select"
                   value={assignee}
                   onChange={e => setAssignee(e.target.value)}
-                />
+                >
+                  <option value="">Seleccionar responsable...</option>
+                  {availableUsers.map(u => (
+                    <option key={u.id} value={u.name}>
+                      {u.name} {u.email ? `(${u.email})` : ''}
+                    </option>
+                  ))}
+                  {assignee && !availableUsers.some(u => u.name === assignee) && (
+                    <option value={assignee}>{assignee}</option>
+                  )}
+                </select>
                 {errors.assignee && (
                   <span style={{ color: 'var(--color-vermillion)', fontSize: '12px' }}>{errors.assignee}</span>
                 )}

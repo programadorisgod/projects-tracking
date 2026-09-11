@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import type { Project, ProjectCategory, ProjectStatus } from '../../types/project';
-import { X, AlertCircle } from 'lucide-react';
+import { X, AlertCircle, User } from 'lucide-react';
+import { api } from '../../services/api';
 
 interface ProjectModalProps {
   isOpen: boolean;
@@ -46,8 +47,17 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
   const [location, setLocation] = useState('');
   const [githubUrl, setGithubUrl] = useState('');
   const [assignee, setAssignee] = useState('');
+  const [availableUsers, setAvailableUsers] = useState<{ id: string; name: string; email?: string }[]>([]);
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  useEffect(() => {
+    let mounted = true;
+    api.getUsers().then(users => {
+      if (mounted) setAvailableUsers(users);
+    }).catch(() => {});
+    return () => { mounted = false; };
+  }, []);
 
   useEffect(() => {
     if (projectToEdit) {
@@ -327,14 +337,25 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
               </div>
 
               <div className="form-group">
-                <label className="form-label">A quién se le asignó (Responsable)</label>
-                <input
-                  type="text"
-                  className="input"
-                  placeholder="Ej. Jerson Tapias / Equipo Big Data"
+                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <User size={13} />
+                  A quién se le asignó (Responsable)
+                </label>
+                <select
+                  className="select"
                   value={assignee}
                   onChange={e => setAssignee(e.target.value)}
-                />
+                >
+                  <option value="">Sin Asignar</option>
+                  {availableUsers.map(u => (
+                    <option key={u.id} value={u.name}>
+                      {u.name} {u.email ? `(${u.email})` : ''}
+                    </option>
+                  ))}
+                  {assignee && assignee !== 'Sin asignar' && !availableUsers.some(u => u.name === assignee) && (
+                    <option value={assignee}>{assignee}</option>
+                  )}
+                </select>
               </div>
             </div>
           </div>

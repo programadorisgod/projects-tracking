@@ -9,6 +9,7 @@ import * as schema from './db/schema';
 import { authHandler } from './auth';
 import { projectsRouter } from './modules/projects/projects.controller';
 import { auditRouter } from './modules/audit/audit.controller';
+import { usersRouter } from './modules/users/users.controller';
 import { projectsService } from './modules/projects/projects.service';
 
 const app = express();
@@ -147,6 +148,7 @@ app.use(express.json({ limit: '1mb' }));
 // API Routes
 app.use('/api/projects', projectsRouter);
 app.use('/api/audit', auditRouter);
+app.use('/api/users', usersRouter);
 
 // 7. Sanitized Health Check (OWASP A05 - No fingerprinting)
 app.get('/api/health', (_req, res) => {

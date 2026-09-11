@@ -185,6 +185,34 @@ export const api = {
         maintenances: 0
       };
     }
+  },
+
+  // Users
+  async getUsers(): Promise<{ id: string; name: string; email?: string; image?: string | null }[]> {
+    try {
+      const res = await secureFetch('/api/users');
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return await res.json();
+    } catch (err) {
+      console.warn('Backend users unreachable, using local fallback:', err);
+      const defaultUsers = [
+        'Jerson Tapias',
+        'Laura Gómez',
+        'Carlos Restrepo',
+        'Santiago Vélez',
+        'Marcela Ríos',
+        'Andrés Morales',
+        'Felipe Vargas'
+      ];
+      const projects = storage.getProjects();
+      const set = new Set<string>(defaultUsers);
+      projects.forEach(p => {
+        if (p.assignee && p.assignee !== 'Sin asignar') {
+          set.add(p.assignee);
+        }
+      });
+      return Array.from(set).sort().map(name => ({ id: name, name, email: '' }));
+    }
   }
 };
 

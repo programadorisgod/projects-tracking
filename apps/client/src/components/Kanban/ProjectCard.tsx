@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { STATUS_DEFINITIONS } from '../../types/project';
 import type { Project, ProjectStatus } from '../../types/project';
 import { 
@@ -6,7 +6,9 @@ import {
   Edit3, 
   Trash2,
   Building2,
-  Wrench
+  Wrench,
+  Archive,
+  ArchiveRestore
 } from 'lucide-react';
 
 interface ProjectCardProps {
@@ -27,6 +29,21 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   onRequestMaintenance
 }) => {
   const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown menu on outside click
+  useEffect(() => {
+    if (!showMenu) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
 
   const initials = project.assignee
     ? project.assignee
@@ -38,10 +55,12 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
     : '??';
 
   const isMaintenance = project.projectType === 'mantenimiento';
+  const isArchived = ['entregado', 'terminado', 'terminado_parcialmente'].includes(project.status);
 
   return (
     <div 
-      className={`kanban-card kanban-card-minimal ${isMaintenance ? 'kanban-card-maintenance' : ''}`}
+      className={`kanban-card kanban-card-minimal ${isMaintenance ? 'kanban-card-maintenance' : ''} ${showMenu ? 'menu-open' : ''}`}
+      style={{ zIndex: showMenu ? 50 : undefined }}
       data-id={project.id}
       onClick={() => onSelect(project)}
     >
@@ -91,6 +110,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
             {showMenu && (
               <div 
+                ref={menuRef}
                 className="dropdown-menu"
                 style={{
                   position: 'absolute',
@@ -100,8 +120,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                   border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-buttons)',
                   boxShadow: 'var(--shadow-product-ui)',
-                  zIndex: 20,
-                  width: '200px',
+                  zIndex: 100,
+                  width: '210px',
                   padding: '4px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -125,6 +145,37 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                     <hr style={{ margin: '4px 0', border: 'none', borderTop: '1px solid var(--border-subtle)' }} />
                   </>
                 )}
+
+                {/* Archivar / Desarchivar */}
+                {isArchived ? (
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    style={{ justifyContent: 'flex-start', color: 'var(--color-notion-blue)', fontWeight: 500 }}
+                    onClick={() => {
+                      onStatusChange(project.id, 'desarrollo');
+                      setShowMenu(false);
+                    }}
+                    title="Desarchivar proyecto y reactivar en Desarrollo"
+                  >
+                    <ArchiveRestore size={12} />
+                    <span>Desarchivar proyecto</span>
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    style={{ justifyContent: 'flex-start', color: 'var(--color-graphite)', fontWeight: 500 }}
+                    onClick={() => {
+                      onStatusChange(project.id, 'entregado');
+                      setShowMenu(false);
+                    }}
+                    title="Archivar y mover a Históricos y entregados"
+                  >
+                    <Archive size={12} />
+                    <span>Archivar (Entregado)</span>
+                  </button>
+                )}
+
+                <hr style={{ margin: '4px 0', border: 'none', borderTop: '1px solid var(--border-subtle)' }} />
 
                 <div style={{ padding: '4px 8px', fontSize: '11px', fontWeight: 600, color: 'var(--color-stone)' }}>
                   Mover a estado:

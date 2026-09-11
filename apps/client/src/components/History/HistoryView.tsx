@@ -21,6 +21,7 @@ import {
   ChevronsLeft,
   ChevronsRight
 } from 'lucide-react';
+import { api } from '../../services/api';
 
 interface HistoryViewProps {
   projects: Project[];
@@ -38,6 +39,16 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedAssignee, setSelectedAssignee] = useState<string>('all');
+  const [dbUsers, setDbUsers] = useState<string[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    api.getUsers().then(users => {
+      if (mounted) setDbUsers(users.map(u => u.name));
+    }).catch(() => {});
+    return () => { mounted = false; };
+  }, []);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -61,6 +72,17 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
     return Array.from(areas).sort();
   }, [projects]);
 
+  // Extract unique assignees
+  const uniqueAssignees = useMemo(() => {
+    const set = new Set<string>(dbUsers);
+    completedProjects.forEach(p => {
+      if (p.assignee && p.assignee !== 'Sin asignar') {
+        set.add(p.assignee);
+      }
+    });
+    return Array.from(set).sort();
+  }, [dbUsers, completedProjects]);
+
   // Filter projects
   const filtered = useMemo(() => {
     return completedProjects.filter(p => {
@@ -74,10 +96,11 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
 
       const matchesArea = selectedArea === 'all' || p.area === selectedArea;
       const matchesCategory = selectedCategory === 'all' || p.category === selectedCategory;
+      const matchesAssignee = selectedAssignee === 'all' || p.assignee === selectedAssignee;
 
-      return matchesSearch && matchesArea && matchesCategory;
+      return matchesSearch && matchesArea && matchesCategory && matchesAssignee;
     });
-  }, [completedProjects, searchTerm, selectedArea, selectedCategory]);
+  }, [completedProjects, searchTerm, selectedArea, selectedCategory, selectedAssignee]);
 
   // Pagination State & Logic
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -86,7 +109,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
   // Reset to first page whenever filters or search criteria change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, selectedArea, selectedCategory]);
+  }, [searchTerm, selectedArea, selectedCategory, selectedAssignee]);
 
   const totalItems = filtered.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
@@ -210,6 +233,19 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
             <option value="all">Todas las Áreas</option>
             {uniqueAreas.map(a => (
               <option key={a} value={a}>{a}</option>
+            ))}
+          </select>
+
+          <select
+            className="select"
+            style={{ width: 'auto', padding: '6px 12px' }}
+            value={selectedAssignee}
+            onChange={(e) => setSelectedAssignee(e.target.value)}
+            title="Filtrar por responsable"
+          >
+            <option value="all">Todos los Responsables</option>
+            {uniqueAssignees.map(u => (
+              <option key={u} value={u}>{u}</option>
             ))}
           </select>
         </div>
